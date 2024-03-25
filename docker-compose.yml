@@ -1,0 +1,52 @@
+version: '3'
+services:
+  node:
+    restart: always
+    build: .
+    ports:
+      - '${APP_PORT:-3000}:3000'
+    command: npm run dev
+    depends_on:
+      - mysql
+    volumes:
+      - ./:/usr/app
+      - /usr/app/node_modules
+  mysql:
+    restart: always
+    image: 'mysql/mysql-server:8.0'
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: '${DB_NAME}'
+      MYSQL_USER: '${DB_USER}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - 'backend-mysql:/var/lib/mysql'
+    networks:
+      - internalnet
+    healthcheck:
+      test:
+        - CMD
+        - mysqladmin
+        - ping
+        - '-p${DB_PASSWORD}'
+      retries: 3
+      timeout: 5s
+  phpmyadmin:
+    restart: always
+    image: 'phpmyadmin:latest'
+    ports:
+      - '${DB_ADMIN_PORT:-3030}:80'
+    networks:
+      - internalnet
+    environment:
+      - PMA_ARBITRARY=1
+networks:
+  internalnet:
+    driver: bridge
+volumes:
+  backend-mysql:
+    driver: local
