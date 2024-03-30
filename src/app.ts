@@ -1,4 +1,4 @@
-import express, { type Application } from 'express'
+import express, { type Request, type Application, type Response } from 'express'
 import fs from 'fs'
 import ip from 'ip'
 import cors from 'cors'
@@ -11,9 +11,9 @@ import { Status } from './enum/status.enum'
 export class App {
   private readonly app: Application
   private readonly port: string | number
-  private readonly APPLICATION_RUNNING = 'A aplicação está rodando em: '
-  private readonly APPLICATION_NOT_RUNNING = 'A aplicação parada'
-  private readonly ROUTE_NOT_FOUND = 'Rota não encontrada'
+  private readonly APPLICATION_RUNNING: string = 'A aplicação está rodando em: '
+  private readonly APPLICATION_NOT_RUNNING: string = 'A aplicação parada'
+  private readonly ROUTE_NOT_FOUND: string = 'Rota não encontrada'
 
   constructor () {
     dotenv.config()
@@ -41,12 +41,12 @@ export class App {
   }
 
   private routes (): void {
-    this.app.get('/', (req, res) => {
+    this.app.get('/', (req: Request, res: Response) => {
       const response = new HttpResponse(Code.OK, Status.OK, 'Hello world! from docker, best than before!')
       res.status(response.statusCode()).send(response)
     })
 
-    this.app.all('*', (req, res) => {
+    this.app.all('*', (req: Request, res: Response) => {
       const response = new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, this.ROUTE_NOT_FOUND)
       res.status(response.statusCode()).send(response)
     })
