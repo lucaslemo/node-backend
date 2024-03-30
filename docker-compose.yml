@@ -1,16 +1,19 @@
 version: '3'
+
 services:
   node:
     restart: always
     build: .
     ports:
       - '${APP_PORT:-3000}:3000'
-    command: npm run dev
     depends_on:
       - mysql
     volumes:
-      - ./:/usr/app
-      - /usr/app/node_modules
+      - ./:/usr/src/app
+    environment:
+      - NODE_ENV=dev
+    command: /usr/src/cache/entrypoint.sh
+
   mysql:
     restart: always
     image: 'mysql/mysql-server:8.0'
@@ -35,6 +38,7 @@ services:
         - '-p${DB_PASSWORD}'
       retries: 3
       timeout: 5s
+
   phpmyadmin:
     restart: always
     image: 'phpmyadmin:latest'
@@ -44,9 +48,11 @@ services:
       - internalnet
     environment:
       - PMA_ARBITRARY=1
+
 networks:
   internalnet:
     driver: bridge
+
 volumes:
   backend-mysql:
     driver: local

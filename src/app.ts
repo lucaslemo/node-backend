@@ -42,7 +42,7 @@ export class App {
 
   private routes (): void {
     this.app.get('/', (req, res) => {
-      const response = new HttpResponse(Code.OK, Status.OK, 'Hello world! from docker')
+      const response = new HttpResponse(Code.OK, Status.OK, 'Hello world! from docker, best than before!')
       res.status(response.statusCode()).send(response)
     })
 
