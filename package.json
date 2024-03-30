@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p .",
+    "migrate": "npx prisma migrate dev",
     "dev": "nodemon --exec ts-node src/index.ts",
     "start": "tsc -p . && NODE_ENV=prod node dist/index.js",
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts"

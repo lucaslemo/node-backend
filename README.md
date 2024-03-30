@@ -60,7 +60,7 @@ Inicia o projeto em modo de produção a partir da pasta `dist`.
 
 Regenera os arquivos do Prisma com base no seu schema.
 
-### `npm run prisma:migrate`
+### `npm run migrate`
 
 Executa todas as migrações pendentes para atualizar o banco de dados.
 
