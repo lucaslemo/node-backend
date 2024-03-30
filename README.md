@@ -34,13 +34,19 @@ Certifique-se de ter o Docker instalado em sua máquina.
 
    Isso iniciará os containers do banco de dados MySQL e do Node.js e rodará o script `npm run dev`.
 
+6. Para executar os scripts npm use o bash do container:
+
+   ```bash
+   docker exec -it $(docker ps -aqf "name=^node-backend-node$") /bin/bash
+   ```
+
 ## Scripts Disponíveis
 
 Descrição dos scripts:
 
 ### `npm run dev`
 
-Executa o projeto em modo de desenvolvimento usando o Nodemon.
+Executa o projeto em modo de desenvolvimento usando o Nodemon. (Roda automaticamente ao iniciar os containers)
 
 ### `npm run build`
 

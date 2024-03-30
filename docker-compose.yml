@@ -4,6 +4,7 @@ services:
   node:
     restart: always
     build: .
+    container_name: node-backend-node
     ports:
       - '${APP_PORT:-3000}:3000'
     depends_on:
@@ -17,6 +18,7 @@ services:
   mysql:
     restart: always
     image: 'mysql/mysql-server:8.0'
+    container_name: node-backend-mysql
     ports:
       - '${DB_PORT:-3306}:3306'
     environment:
@@ -42,6 +44,7 @@ services:
   phpmyadmin:
     restart: always
     image: 'phpmyadmin:latest'
+    container_name: node-backend-phpmyadmin
     ports:
       - '${DB_ADMIN_PORT:-3030}:80'
     networks:
