@@ -7,6 +7,8 @@ services:
     container_name: node-backend-node
     ports:
       - '${APP_PORT:-3000}:3000'
+    networks:
+      - internalnet
     depends_on:
       - mysql
     volumes:
@@ -14,6 +16,7 @@ services:
     environment:
       - NODE_ENV=dev
     command: /usr/src/cache/entrypoint.sh
+    user: 1000:1000
 
   mysql:
     restart: always

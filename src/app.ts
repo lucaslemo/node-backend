@@ -7,6 +7,7 @@ import dotenv from 'dotenv'
 import { Code } from './enum/code.enum'
 import { HttpResponse } from './domain/responses'
 import { Status } from './enum/status.enum'
+import { PrismaClient } from '@prisma/client'
 
 export class App {
   private readonly app: Application
@@ -44,6 +45,44 @@ export class App {
     this.app.get('/', (req: Request, res: Response) => {
       const response = new HttpResponse(Code.OK, Status.OK, 'Hello world! from docker, best than before!')
       res.status(response.statusCode()).send(response)
+    })
+
+    this.app.get('/users', async (req: Request, res: Response) => {
+      const prisma = new PrismaClient()
+      prisma.user.findMany()
+        .then(async (users) => {
+          await prisma.$disconnect()
+          const response = new HttpResponse(Code.OK, Status.OK, 'Lista dos usuários', {users: users})
+          res.status(response.statusCode()).send(response)
+        })
+        .catch(async (e) => {
+          console.error(e)
+          await prisma.$disconnect()
+          const response = new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, e.message)
+          res.status(response.statusCode()).send(response)
+        })
+    })
+
+    this.app.post('/users', async (req: Request, res: Response) => {
+      const prisma = new PrismaClient()
+      prisma.user.create({
+        data: {
+          name: req.body.name,
+          email: req.body.email,
+          password: req.body.password
+        },
+      })
+        .then(async (user) => {
+          await prisma.$disconnect()
+          const response = new HttpResponse(Code.CREATED, Status.CREATED, 'Usuário criado com sucesso!', {user: user})
+          res.status(response.statusCode()).send(response)
+        })
+        .catch(async (e) => {
+          console.error(e)
+          await prisma.$disconnect()
+          const response = new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, e.message)
+          res.status(response.statusCode()).send(response)
+        })
     })
 
     this.app.all('*', (req: Request, res: Response) => {
