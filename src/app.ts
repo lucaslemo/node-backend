@@ -1,9 +1,12 @@
-import express, { type Request, type Application, type Response } from 'express'
+import express, { type Request, type Application, type Response, type NextFunction } from 'express'
 import fs from 'fs'
 import ip from 'ip'
 import cors from 'cors'
+import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
+import session from 'express-session'
+import UserRouter from './routes/userRoutes'
 import { Code } from './enum/code.enum'
 import { HttpResponse } from './domain/responses'
 import { Status } from './enum/status.enum'
@@ -20,7 +23,8 @@ export class App {
     dotenv.config()
     this.port = process.env.APP_PORT ?? 3000
     this.app = express()
-    this.middleware()
+    this.app.set('trust proxy', 1)
+    this.middlewares()
     this.routes()
   }
 
@@ -33,59 +37,34 @@ export class App {
     })
   }
 
-  private middleware (): void {
+  private middlewares (): void {
+    this.app.use(helmet())
+    this.app.use( session({
+      secret : 's3Cur3',
+      name : 'sessionId',
+     })
+   );
     this.app.use(cors({ origin: '*' }))
     this.app.use(express.json())
     this.app.use(morgan('combined', {
       stream: fs.createWriteStream('./src/store/access.log', { flags: 'a' })
     }))
+    this.app.use(async (req: Request, res: Response, next: NextFunction) => {
+      const prisma = new PrismaClient()
+      req.prisma = prisma;
+      next()
+    })
   }
 
   private routes (): void {
-    this.app.get('/', (req: Request, res: Response) => {
+    this.app.get('/', async (req: Request, res: Response) => {
       const response = new HttpResponse(Code.OK, Status.OK, 'Hello world! from docker, best than before!')
       res.status(response.statusCode()).send(response)
     })
 
-    this.app.get('/users', async (req: Request, res: Response) => {
-      const prisma = new PrismaClient()
-      prisma.user.findMany()
-        .then(async (users) => {
-          await prisma.$disconnect()
-          const response = new HttpResponse(Code.OK, Status.OK, 'Lista dos usuários', {users: users})
-          res.status(response.statusCode()).send(response)
-        })
-        .catch(async (e) => {
-          console.error(e)
-          await prisma.$disconnect()
-          const response = new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, e.message)
-          res.status(response.statusCode()).send(response)
-        })
-    })
-
-    this.app.post('/users', async (req: Request, res: Response) => {
-      const prisma = new PrismaClient()
-      prisma.user.create({
-        data: {
-          name: req.body.name,
-          email: req.body.email,
-          password: req.body.password
-        },
-      })
-        .then(async (user) => {
-          await prisma.$disconnect()
-          const response = new HttpResponse(Code.CREATED, Status.CREATED, 'Usuário criado com sucesso!', {user: user})
-          res.status(response.statusCode()).send(response)
-        })
-        .catch(async (e) => {
-          console.error(e)
-          await prisma.$disconnect()
-          const response = new HttpResponse(Code.INTERNAL_SERVER_ERROR, Status.INTERNAL_SERVER_ERROR, e.message)
-          res.status(response.statusCode()).send(response)
-        })
-    })
-
-    this.app.all('*', (req: Request, res: Response) => {
+    this.app.use('/users', UserRouter)
+    
+    this.app.all('*', async (req: Request, res: Response) => {
       const response = new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, this.ROUTE_NOT_FOUND)
       res.status(response.statusCode()).send(response)
     })
