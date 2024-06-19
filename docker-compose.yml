@@ -1,12 +1,11 @@
-version: '3'
-
 services:
   node:
     restart: always
     build: .
     container_name: node-backend-node
+    image: node/backend
     ports:
-      - '${APP_PORT:-3000}:3000'
+      - '${APP_PORT:-3030}:3030'
     networks:
       - internalnet
     depends_on:
@@ -49,7 +48,7 @@ services:
     image: 'phpmyadmin:latest'
     container_name: node-backend-phpmyadmin
     ports:
-      - '${DB_ADMIN_PORT:-3030}:80'
+      - '${DB_ADMIN_PORT:-8088}:80'
     networks:
       - internalnet
     environment:

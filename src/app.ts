@@ -7,6 +7,7 @@ import morgan from 'morgan'
 import dotenv from 'dotenv'
 import session from 'express-session'
 import UserRouter from './routes/userRoutes'
+import AuthRouter from './routes/authRoutes'
 import { Code } from './enum/code.enum'
 import { HttpResponse } from './domain/responses'
 import { Status } from './enum/status.enum'
@@ -21,7 +22,7 @@ export class App {
 
   constructor () {
     dotenv.config()
-    this.port = process.env.APP_PORT ?? 3000
+    this.port = process.env.APP_PORT ?? 3030
     this.app = express()
     this.app.set('trust proxy', 1)
     this.middlewares()
@@ -60,13 +61,16 @@ export class App {
     this.app.get('/', async (req: Request, res: Response) => {
       const response = new HttpResponse(Code.OK, Status.OK, 'Hello world! from docker, best than before!')
       res.status(response.statusCode()).send(response)
+      await req.prisma.$disconnect()
     })
 
     this.app.use('/users', UserRouter)
+    this.app.use('/auth', AuthRouter)
     
     this.app.all('*', async (req: Request, res: Response) => {
       const response = new HttpResponse(Code.NOT_FOUND, Status.NOT_FOUND, this.ROUTE_NOT_FOUND)
       res.status(response.statusCode()).send(response)
+      await req.prisma.$disconnect()
     })
   }
 }

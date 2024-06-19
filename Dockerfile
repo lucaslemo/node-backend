@@ -1,22 +1,23 @@
-FROM node:20.10.0
+FROM node:22.3.0-alpine
 
-RUN apt update && apt upgrade -y
+RUN apk update
+RUN apk add bash
 
-RUN mkdir /usr/src/cache
+RUN mkdir -p /usr/src/cache
 WORKDIR /usr/src/cache
 
-COPY package.json .
-COPY package-lock.json .
+COPY package*.json .
+
 COPY entrypoint.sh .
 
 RUN chmod +x /usr/src/cache/entrypoint.sh
 
 RUN npm install
 
-RUN mkdir /usr/src/app
+RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 COPY . .
 
-ENV APP_PORT 3000
+ENV APP_PORT 3030
 EXPOSE $APP_PORT
