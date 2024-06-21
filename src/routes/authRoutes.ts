@@ -4,7 +4,7 @@ import { HttpResponse } from '../domain/responses'
 import { Status } from '../enum/status.enum'
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
-import crypto from 'crypto'
+// import crypto from 'crypto'
 
 const AuthRouter = express.Router()
 
@@ -17,8 +17,8 @@ AuthRouter.post('/sign', async (req: Request, res: Response) => {
         });
 
         if (user && await argon2.verify(user.password, req.body.password)) {
-            const key = crypto.randomBytes(32).toString('hex')
-            const token = jwt.sign({name: user.name, email: user.email}, '7efb9cbcec18c02436a75866c882f59877b34fb9436dc0bb65232ff8db01e8ef', {expiresIn: 86400});
+            const key = <string>process.env.JWT_KEY //crypto.randomBytes(32).toString('hex')
+            const token = jwt.sign({name: user.name, email: user.email}, key, {expiresIn: 86400});
             await req.prisma.user.update({
                 where: {
                     id: user.id
@@ -27,7 +27,7 @@ AuthRouter.post('/sign', async (req: Request, res: Response) => {
                     token: token,
                 }
             })
-            const response = new HttpResponse(Code.OK, Status.OK, 'Autenticado com sucesso', {token: token, key: key})
+            const response = new HttpResponse(Code.OK, Status.OK, 'Autenticado com sucesso', {token: token, user: {id:user.id, name:user.name}})
             res.status(response.statusCode()).send(response)
 
         } else {
@@ -50,7 +50,8 @@ AuthRouter.post('/sign', async (req: Request, res: Response) => {
 AuthRouter.post('/checkToken', async (req: Request, res: Response) => {
 	try {
         const token = (<string>req.headers.authorization).split(' ')[1]
-        jwt.verify(token, '7efb9cbcec18c02436a75866c882f59877b34fb9436dc0bb65232ff8db01e8ef', (err, decoded) => {
+        const key = <string>process.env.JWT_KEY
+        jwt.verify(token, key, (err, decoded) => {
             if(!err) {
                 const response = new HttpResponse(Code.OK, Status.OK, 'Token válido')
                 res.status(response.statusCode()).send(response)
