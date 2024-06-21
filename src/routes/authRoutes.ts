@@ -47,7 +47,7 @@ AuthRouter.post('/sign', async (req: Request, res: Response) => {
 	}
 });
 
-AuthRouter.post('/checkToken', async (req: Request, res: Response) => {
+AuthRouter.get('/verify', async (req: Request, res: Response) => {
 	try {
         const token = (<string>req.headers.authorization).split(' ')[1]
         const key = <string>process.env.JWT_KEY
