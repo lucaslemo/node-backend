@@ -53,7 +53,7 @@ AuthRouter.get('/verify', async (req: Request, res: Response) => {
         const key = <string>process.env.JWT_KEY
         jwt.verify(token, key, (err, decoded) => {
             if(!err) {
-                const response = new HttpResponse(Code.OK, Status.OK, 'Token válido')
+                const response = new HttpResponse(Code.OK, Status.OK, 'Token válido', {decoded: decoded})
                 res.status(response.statusCode()).send(response)
 
             } else {
